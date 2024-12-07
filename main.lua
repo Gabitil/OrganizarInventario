@@ -1,25 +1,46 @@
+--[[***************************************************************************************************************
+    Autor: Gabriel Augusto de Lima Maia
+    Data: 07/12/2024
+    Curso: Engenharia da Computação - CEFET-MG
+    Descrição: Implementar uma solução funcional para organizar inventários no Minecraft sem utilizar estruturas
+    de dados avançadas, como HashMap, limitando-se apenas às listas padrão da linguagem.
+***************************************************************************************************************--]]
+
+--[[**************************************************************************************************************
+                                      Declaração de Variáveis Globais
+****************************************************************************************************************]] 
 
 local chests = {} -- Lista de baús
 local startTime = os.time() -- Marca o início
 -- lista que guarda os itens não completos, seu slot e bau
 local itensNaoCompletos = {} -- Lista de itens não completos
-
 -- Abre o arquivo de log para salvar a saída
 local logFile = fs.open("saida.txt", "w")
 
--- Redefines the `print` function to log messages to a file.
--- 
--- This function takes any number of arguments, converts them to strings,
--- and writes them to a log file, separated by tabs. Each call to `print`
--- ends with a newline in the log file.
--- 
--- Parameters:
--- ... (vararg): A variable number of arguments to be printed and logged.
--- 
--- Note:
--- The `logFile` variable must be a valid file handle that supports `write`
--- and `flush` methods.
--- Redefine a função `print` para registrar as mensagens no arquivo
+
+--[[**************************************************************************************************************
+                                            Funções
+****************************************************************************************************************]]
+
+--[[ Redefine a função `print` para registrar mensagens em um arquivo de log.
+
+    Essa função substitui a função padrão print de Lua. Em vez de exibir os valores
+    na tela, ela grava os valores em um arquivo de log. Cada argumento é convertido
+    em texto (usando tostring) e separado por tabulação (\t), garantindo que os dados 
+    fiquem organizados. Após todos os valores serem escritos, a função adiciona uma 
+    nova linha ao final do arquivo e usa flush() para salvar os dados no disco 
+    imediatamente.
+
+    Parâmetros:
+    ... (vararg): Uma quantidade variável de argumentos que serão exibidos e 
+    registrados no arquivo de log.
+
+    Observação:
+    A variável `logFile` deve ser um manipulador de arquivo válido que suporte 
+    os métodos `write` (para escrever no arquivo) e `flush` (para garantir que 
+    os dados sejam salvos imediatamente no disco).
+--]]
+
 function print(...)
     local args = {...}
     for i, v in ipairs(args) do
@@ -34,7 +55,8 @@ local status, err = pcall(function()
 
     --[[
         Function: procurarItensNaoCompletos
-        Description: Procura por itens incompletos em uma lista de baús e adiciona-os a uma lista de itens incompletos.
+        Description: Procura por itens incompletos em uma lista de baús e adiciona-os a uma lista de 
+        itens incompletos.
         
         Parameters:
             chests (table): Uma tabela contendo os baús a serem verificados.
@@ -50,6 +72,7 @@ local status, err = pcall(function()
             - Adiciona os itens incompletos a uma lista chamada `itensNaoCompletos`.
             - Imprime no console os detalhes dos itens incompletos encontrados.
     ]]
+    
     local function procurarItensNaoCompletos(chests)
         for _, chest in ipairs(chests) do
             for slot, item in pairs(chest.list()) do
@@ -64,25 +87,58 @@ local status, err = pcall(function()
         end
     end
 
+    --[[ Verifica se dois itens são iguais com base em diferentes critérios.
+
+        Esta função compara dois itens utilizando as possíveis formas de 
+        diferenciação comuns no Minecraft e nos mods. São verificadas as 
+        seguintes características dos itens:
+        - `displayName`: O nome exibido do item.
+        - `name`: O identificador interno do item.
+        - `nbt`: Dados adicionais do item, conhecidos como NBT (Tag Baseada em Nome).
+
+        A função retorna `true` se todas as características forem iguais e 
+        `false` caso contrário.
+
+        Parâmetros:
+        item1 (table): Uma tabela contendo os detalhes do primeiro item.
+        item2 (table): Uma tabela contendo os detalhes do segundo item.
+
+        Retorno:
+        boolean: `true` se os dois itens forem considerados iguais, `false` caso contrário.
+
+        Observação:
+        Não tenho certeza se esta função cobre todas as formas que os mods utilizam
+        para diferenciar itens. Pode ser que mods novos adicionem outras formas de 
+        diferenciação, fazendo com que a função apresente falsos positivos.
+    --]]
+
     local function verificarIgualidade(item1, item2)
-        if item1.itemDetail.displayName == item2.itemDetail.displayName and item1.itemDetail.name == item2.itemDetail.name and item1.itemDetail.nbt == item2.itemDetail.nbt then
+        if item1.itemDetail.displayName == item2.itemDetail.displayName and
+        item1.itemDetail.name == item2.itemDetail.name and
+        item1.itemDetail.nbt == item2.itemDetail.nbt then
             return true
         end
         return false
     end
 
+
     --[[
         Função: conferirItensNaoCompletos
-        Descrição: Verifica se há itens duplicados na lista de itens incompletos e mantém apenas os itens duplicados na lista.
+        Descrição: Verifica se há itens duplicados na lista de itens incompletos e mantém apenas os itens 
+        duplicados na lista.
+
         Parâmetros: Nenhum
         Retorno: Nenhum
         Detalhes:
             - Itera sobre a lista de itens incompletos (itensNaoCompletos).
-            - Para cada item, verifica se existe outro item com o mesmo nome (displayName) mas em um slot diferente.
+            - Para cada item, verifica se existe outro item com o mesmo nome (displayName) mas em um slot 
+            diferente.
             - Se encontrar um item duplicado, adiciona-o à lista de itens para manter (itensParaManter).
             - Atualiza a lista de itens incompletos (itensNaoCompletos) com apenas os itens duplicados.
-            - Imprime no console uma mensagem indicando o item duplicado encontrado, incluindo seu nome, quantidade, slot e baú.
+            - Imprime no console uma mensagem indicando o item duplicado encontrado, incluindo seu nome, 
+            quantidade, slot e baú.
     ]]
+
     local function conferirItensNaoCompletos()
         
         -- Itera sobre a lista de itens incompletos
@@ -106,7 +162,6 @@ local status, err = pcall(function()
 
         print("Tamanho da lista de itens incompletos depois da seleção: " .. #itensNaoCompletos)
     end
-
     
     --[[
         Função: transferirItens
@@ -124,7 +179,7 @@ local status, err = pcall(function()
             - Adiciona o item à lista de itens finalizados e remove da lista de itens não finalizados.
             - Imprime mensagens de log detalhando a transferência.
     ]]
-    --função que recebe dois baús e transfere os itens
+
     local function transferirItens()
         ::reiniciar::
         -- Verifica se não há itens incompletos
@@ -186,45 +241,52 @@ local status, err = pcall(function()
     end
 
 
+--[[**************************************************************************************************************
+                                      Sript Principal ("Main")
+****************************************************************************************************************]]
+--[[ 
+        Este script realiza várias operações relacionadas a periféricos no ambiente Minecraft, usando o mod 
+        Computercraft e seus periféricos, especialmente voltadas para baús e manipulação de itens.
 
+        As principais operações incluem:
+        1. Iterar sobre os periféricos conectados para encontrar baús.
+        2. Procurar itens incompletos dentro dos baús.
+        3. Verificar itens incompletos duplicados.
+        4. Transferir itens para completá-los.
+        5. Registrar o tempo gasto em cada operação e o tempo total de execução.
 
-    --[[
-        This script performs several operations related to peripherals in a Minecraft environment.
-        
-        The main operations include:
-        1. Iterating over connected peripherals to find chests.
-        2. Searching for incomplete items in the chests.
-        3. Checking for duplicate incomplete items.
-        4. Transferring items to complete them.
-        5. Logging the time taken for each operation and the total execution time.
-        
-        Functions:
-        - peripheral.getNames(): Retrieves the names of all connected peripherals.
-        - peripheral.hasType(name, "minecraft:chest"): Checks if the peripheral is a chest.
-        - peripheral.wrap(name): Wraps the peripheral for further operations.
-        - procurarItensNaoCompletos(chests): Searches for incomplete items in the provided chests.
-        - conferirItensNaoCompletos(): Checks for duplicate incomplete items.
-        - transferirItens(): Transfers items to complete them.
-        
-        Variables:
-        - inicioPerifericos: Start time for peripheral search.
-        - tempoPerifericos: Time taken for peripheral search.
-        - inicioContagem: Start time for item search.
-        - tempoContagem: Time taken for item search.
-        - inicioConferir: Start time for checking items.
-        - tempoConferir: Time taken for checking items.
-        - inicioTransferencia: Start time for item transfer.
-        - tempoTransferencia: Time taken for item transfer.
-        - endTime: End time for the entire execution.
-        - tempoExecucao: Total execution time.
-        
-        Error Handling:
-        - Logs any errors encountered during execution to a log file.
-        
-        Note:
-        - The total execution time is divided by 20 for some reason, possibly related to the game's tick rate.
-    ]]
-    -- Itera sobre os perifericos conectados
+        Funções utilizadas:
+        - peripheral.getNames(): Obtém os nomes de todos os periféricos conectados.
+        - peripheral.hasType(name, "minecraft:chest"): Verifica se o periférico é um baú.
+        - peripheral.wrap(name): Associa o periférico a uma variável para operações subsequentes.
+        - procurarItensNaoCompletos(chests): Procura itens incompletos nos baús fornecidos.
+        - conferirItensNaoCompletos(): Verifica se existem itens incompletos duplicados.
+        - transferirItens(): Transfere itens entre baús para completá-los.
+
+        Variáveis principais:
+        - inicioPerifericos: Tempo de início da busca pelos periféricos.
+        - tempoPerifericos: Tempo gasto na busca pelos periféricos.
+        - inicioContagem: Tempo de início da contagem de itens incompletos.
+        - tempoContagem: Tempo gasto para contar os itens.
+        - inicioConferir: Tempo de início da verificação de itens duplicados incompletos.
+        - tempoConferir: Tempo gasto na verificação de itens.
+        - inicioTransferencia: Tempo de início da transferência de itens.
+        - tempoTransferencia: Tempo gasto na transferência de itens.
+        - endTime: Tempo final de execução do script.
+        - tempoExecucao: Tempo total de execução do script.
+
+        Tratamento de Erros:
+        - Se um erro ocorrer durante a execução, ele será registrado em um arquivo de log.
+
+        Observação:
+        - O tempo total de execução é dividido por 20, possivelmente devido à relação 
+        com o *tick rate* do Minecraft, onde 20 ticks equivalem a 1 segundo no jogo.
+    --]]
+    
+    -- Loop que percorre todos os nomes dos periféricos conectados ao computador do Computercraft
+    -- e se o nome do periferico for "minecraft:chest", ele embrulha com a função peripheral.wrap
+    -- em uma tabela com nome chests.
+    -- obs: caso esteja usando outro mod com baú, procure saber o nome do baú desse mod
     local inicioPerifericos = os.time()
     for _, name in ipairs(peripheral.getNames()) do
         if peripheral.hasType(name, "minecraft:chest") then
@@ -235,14 +297,16 @@ local status, err = pcall(function()
     local tempoPerifericos = os.time() - inicioPerifericos
     print("Tempo de busca dos perifericos: " .. tempoPerifericos .. " segundos")
 
+    
+    -- Chama a Função que Procura por itens incompletos em uma lista de baús e para adicionar-los a uma lista de 
+    -- itens incompletos
     local inicioContagem = os.time()
-    -- Procura itens não completos
     procurarItensNaoCompletos(chests)
 
     local tempoContagem = os.time() - inicioContagem
     print("Tempo de contagem dos itens: " .. tempoContagem .. " segundos")
 
-    -- Conferir se tem mais de um item igual incompleto
+    -- Verifica se há itens duplicados na lista de itens incompletos e mantém apenas os itens duplicados na lista.
     local inicioConferir = os.time()
     conferirItensNaoCompletos()
     local tempoConferir = os.time() - inicioConferir
@@ -268,3 +332,37 @@ end
 
 -- Fecha o arquivo de log
 logFile.close()
+
+--[[
+
+Problema:
+
+No ComputerCraft, a função os.time() não é confiável para medir o tempo de execução do programa, 
+pois ela não representa o tempo real, mas sim o tempo simulado dentro do jogo. Esse comportamento 
+pode levar a resultados incorretos, como valores negativos ou tempos inconsistentes, especialmente 
+se o servidor estiver sobrecarregado, se o jogo estiver com lag ou se o tempo do jogo estiver pausado.
+
+Um exemplo típico de erro ocorre quando o programa registra um tempo negativo, mesmo após a execução 
+de uma operação que durou vários minutos no jogo, como uma operação de transferência de itens. 
+Isso acontece porque a função os.time() não considera as condições do servidor ou do jogo, 
+resultando em cálculos errôneos.
+
+Possível Solução:
+
+Uma alternativa mais confiável para medir o tempo no ComputerCraft é utilizar a função os.clock(). 
+Esta função retorna o tempo de CPU consumido pelo programa desde o início da execução, em segundos 
+com precisão decimal. Ao contrário de os.time(), os.clock() não é afetada por variações no tempo 
+do jogo, tornando-a uma melhor opção para medir a duração de operações dentro do ComputerCraft.
+
+Mas como essa é uma solução que foi me passada pelo ChatGPT, não sei se essa função existe e se
+ela funciona como descrito.
+
+Como Aplicar:
+
+    Substitua todas as chamadas para os.time() por os.clock().
+    Use string.format("%.2f", valor) para formatar o tempo de execução com precisão de 2 casas decimais, 
+    tornando os resultados mais legíveis e consistentes.
+    Com essa abordagem, o tempo de execução será mais estável e não sofrerá interferências de lag ou 
+    outras condições de desempenho do servidor.
+    
+]]
