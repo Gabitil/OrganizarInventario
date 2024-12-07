@@ -1,7 +1,8 @@
 # Organizador de Inventário no Minecraft com ComputerCraft (Sem HashMap)
 
 Este programa foi desenvolvido em Lua com o mod ComputerCraft no Minecraft para organizar automaticamente os itens em múltiplos baús conectados. A proposta é transferir itens entre baús de modo a completar os "stacks" (pilhas) incompletas e, assim, otimizar o armazenamento.
-Objetivo
+
+# Objetivo
 
 Implementar uma solução funcional para organizar inventários no Minecraft sem utilizar estruturas de dados avançadas, como HashMap, limitando-se apenas às listas padrão da linguagem.
 
