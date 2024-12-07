@@ -9,12 +9,13 @@
 --[[**************************************************************************************************************
                                       Declaração de Variáveis Globais
 ****************************************************************************************************************]] 
-
-local chests = {} -- Lista de baús
-local startTime = os.time() -- Marca o início
--- lista que guarda os itens não completos, seu slot e bau
+--- Lista dos baús
+local chests = {}
+--- lista que guarda os itens não completos, seu slot e bau
 local itensNaoCompletos = {} -- Lista de itens não completos
--- Abre o arquivo de log para salvar a saída
+--- Marca o inicio da contagem do tempo
+local startTime = os.time()
+--- Abre o arquivo de log para salvar a saída
 local logFile = fs.open("saida.txt", "w")
 
 
@@ -22,25 +23,24 @@ local logFile = fs.open("saida.txt", "w")
                                             Funções
 ****************************************************************************************************************]]
 
---[[ Redefine a função `print` para registrar mensagens em um arquivo de log.
-
-    Essa função substitui a função padrão print de Lua. Em vez de exibir os valores
-    na tela, ela grava os valores em um arquivo de log. Cada argumento é convertido
-    em texto (usando tostring) e separado por tabulação (\t), garantindo que os dados 
-    fiquem organizados. Após todos os valores serem escritos, a função adiciona uma 
-    nova linha ao final do arquivo e usa flush() para salvar os dados no disco 
-    imediatamente.
-
-    Parâmetros:
-    ... (vararg): Uma quantidade variável de argumentos que serão exibidos e 
-    registrados no arquivo de log.
-
-    Observação:
-    A variável `logFile` deve ser um manipulador de arquivo válido que suporte 
-    os métodos `write` (para escrever no arquivo) e `flush` (para garantir que 
-    os dados sejam salvos imediatamente no disco).
---]]
-
+---Redefine a função `print` para registrar mensagens em um arquivo de log.
+---
+---Essa função substitui a função padrão print de Lua. Em vez de exibir os valores
+---na tela, ela grava os valores em um arquivo de log. Cada argumento é convertido
+---em texto (usando tostring) e separado por tabulação (\t), garantindo que os dados 
+---fiquem organizados. Após todos os valores serem escritos, a função adiciona uma 
+---nova linha ao final do arquivo e usa flush() para salvar os dados no disco 
+---imediatamente.
+---
+---Parâmetros:
+---
+---@param ... (vararg): Uma quantidade variável de argumentos que serão exibidos e 
+---registrados no arquivo de log.
+---
+---Observação:
+---A variável `logFile` deve ser um manipulador de arquivo válido que suporte 
+---os métodos `write` (para escrever no arquivo) e `flush` (para garantir que 
+---os dados sejam salvos imediatamente no disco).
 function print(...)
     local args = {...}
     for i, v in ipairs(args) do
@@ -50,29 +50,27 @@ function print(...)
     logFile.flush()
 end
 
--- Captura erros usando pcall para salvar no arquivo também
+--- Captura erros usando pcall para salvar no arquivo também
 local status, err = pcall(function()
 
-    --[[
-        Function: procurarItensNaoCompletos
-        Description: Procura por itens incompletos em uma lista de baús e adiciona-os a uma lista de 
-        itens incompletos.
-        
-        Parameters:
-            chests (table): Uma tabela contendo os baús a serem verificados.
-        
-        Returns:
-            None
-        
-        Details:
-            - Itera sobre cada baú na lista fornecida.
-            - Para cada baú, itera sobre cada slot e item no baú.
-            - Obtém os detalhes completos do item no slot atual.
-            - Verifica se o item é incompleto (quantidade menor que o limite do slot).
-            - Adiciona os itens incompletos a uma lista chamada `itensNaoCompletos`.
-            - Imprime no console os detalhes dos itens incompletos encontrados.
-    ]]
-    
+
+    ---Function: procurarItensNaoCompletos
+    ---
+    ---Description: Procura por itens incompletos em uma lista de baús e adiciona-os a uma lista de 
+    ---itens incompletos.
+    --- 
+    ---Parameters:
+    ---@param chests (table): Uma tabela contendo os baús a serem verificados.
+    ---        
+    ---Returns: Nada
+    ---        
+    ---Details:
+    ---- Itera sobre cada baú na lista fornecida.
+    ---- Para cada baú, itera sobre cada slot e item no baú.
+    ---- Obtém os detalhes completos do item no slot atual.
+    ---- Verifica se o item é incompleto (quantidade menor que o limite do slot).
+    ---- Adiciona os itens incompletos a uma lista chamada `itensNaoCompletos`.
+    ---- Imprime no console os detalhes dos itens incompletos encontrados.
     local function procurarItensNaoCompletos(chests)
         for _, chest in ipairs(chests) do
             for slot, item in pairs(chest.list()) do
@@ -87,31 +85,27 @@ local status, err = pcall(function()
         end
     end
 
-    --[[ Verifica se dois itens são iguais com base em diferentes critérios.
-
-        Esta função compara dois itens utilizando as possíveis formas de 
-        diferenciação comuns no Minecraft e nos mods. São verificadas as 
-        seguintes características dos itens:
-        - `displayName`: O nome exibido do item.
-        - `name`: O identificador interno do item.
-        - `nbt`: Dados adicionais do item, conhecidos como NBT (Tag Baseada em Nome).
-
-        A função retorna `true` se todas as características forem iguais e 
-        `false` caso contrário.
-
-        Parâmetros:
-        item1 (table): Uma tabela contendo os detalhes do primeiro item.
-        item2 (table): Uma tabela contendo os detalhes do segundo item.
-
-        Retorno:
-        boolean: `true` se os dois itens forem considerados iguais, `false` caso contrário.
-
-        Observação:
-        Não tenho certeza se esta função cobre todas as formas que os mods utilizam
-        para diferenciar itens. Pode ser que mods novos adicionem outras formas de 
-        diferenciação, fazendo com que a função apresente falsos positivos.
-    --]]
-
+    ---Esta função compara dois itens utilizando as possíveis formas de 
+    ---diferenciação comuns no Minecraft e nos mods. São verificadas as 
+    ---seguintes características dos itens:
+    ---- `displayName`: O nome exibido do item.
+    ---- `name`: O identificador interno do item.
+    ---- `nbt`: Dados adicionais do item, conhecidos como NBT (Tag Baseada em Nome).
+    ---
+    ---A função retorna `true` se todas as características forem iguais e 
+    ---`false` caso contrário.
+    ---
+    ---Parâmetros:
+    ---@param item1 (table): Uma tabela contendo os detalhes do primeiro item.
+    ---@param item2 (table): Uma tabela contendo os detalhes do segundo item.
+    ---
+    ---Retorno:
+    ---@return boolean: `true` se os dois itens forem considerados iguais, `false` caso contrário.
+    ---
+    ---Observação:<br>
+    ---Não tenho certeza se esta função cobre todas as formas que os mods utilizam
+    ---para diferenciar itens. Pode ser que mods novos adicionem outras formas de 
+    ---diferenciação, fazendo com que a função apresente falsos positivos.
     local function verificarIgualidade(item1, item2)
         if item1.itemDetail.displayName == item2.itemDetail.displayName and
         item1.itemDetail.name == item2.itemDetail.name and
@@ -122,30 +116,24 @@ local status, err = pcall(function()
     end
 
 
-    --[[
-        Função: conferirItensNaoCompletos
-        Descrição: Verifica se há itens duplicados na lista de itens incompletos e mantém apenas os itens 
-        duplicados na lista.
 
-        Parâmetros: Nenhum
-        Retorno: Nenhum
-        Detalhes:
-            - Itera sobre a lista de itens incompletos (itensNaoCompletos).
-            - Para cada item, verifica se existe outro item com o mesmo nome (displayName) mas em um slot 
-            diferente.
-            - Se encontrar um item duplicado, adiciona-o à lista de itens para manter (itensParaManter).
-            - Atualiza a lista de itens incompletos (itensNaoCompletos) com apenas os itens duplicados.
-            - Imprime no console uma mensagem indicando o item duplicado encontrado, incluindo seu nome, 
-            quantidade, slot e baú.
-    ]]
-
+    ---Descrição: Verifica se há itens duplicados na lista de itens incompletos e mantém apenas os itens duplicados na lista.
+    ---
+    ---Parâmetros: Nenhum <br>
+    ---Retorno: Nenhum
+    ---
+    ---Detalhes:
+    ---- Itera sobre a lista de itens incompletos (itensNaoCompletos).
+    ---- Para cada item, verifica se existe outro item com o mesmo nome (displayName) mas em um slot diferente.
+    ---- Se encontrar um item duplicado, adiciona-o à lista de itens para manter (itensParaManter).
+    ---- Atualiza a lista de itens incompletos (itensNaoCompletos) com apenas os itens duplicados.
+    ---- Imprime no console uma mensagem indicando o item duplicado encontrado, incluindo seu nome, quantidade, slot e baú.
     local function conferirItensNaoCompletos()
         
         -- Itera sobre a lista de itens incompletos
         ::repete::
         for i, item in ipairs(itensNaoCompletos) do
             local temIgual = false
-            -- Verifica se existe um item igual na lista
             for j, item2 in ipairs(itensNaoCompletos) do
                 if i ~= j and verificarIgualidade(item, item2) then
                     temIgual = true
@@ -163,23 +151,20 @@ local status, err = pcall(function()
         print("Tamanho da lista de itens incompletos depois da seleção: " .. #itensNaoCompletos)
     end
     
-    --[[
-        Função: transferirItens
-        Descrição: Transfere itens entre dois baús, completando stacks incompletos.
-        Parâmetros: Nenhum.
-        Retorno: Nenhum.
-        Detalhes:
-            - Verifica se há itens incompletos na lista `itensNaoCompletos`.
-            - Faz uma cópia da tabela `itensNaoCompletos` para `itensNaoFinalizados`.
-            - Itera sobre a lista de itens incompletos e verifica se o item já foi finalizado.
-            - Se o item não foi finalizado, itera sobre a lista de itens não finalizados.
-            - Verifica se o nome do item é igual e o slot é diferente.
-            - Calcula a quantidade que falta para completar o stack.
-            - Transfere a quantidade necessária de itens entre os baús.
-            - Adiciona o item à lista de itens finalizados e remove da lista de itens não finalizados.
-            - Imprime mensagens de log detalhando a transferência.
-    ]]
-
+    ---Transfere itens entre dois baús, completando stacks incompletos.<br>
+    ---Parâmetros: Nenhum.<br>
+    ---Retorno: Nenhum.<br>
+    ---
+    ---Detalhes:
+    ---- Verifica se há itens incompletos na lista `itensNaoCompletos`.
+    ---- Faz uma cópia da tabela `itensNaoCompletos` para `itensNaoFinalizados`.
+    ---- Itera sobre a lista de itens incompletos e verifica se o item já foi finalizado.
+    ---- Se o item não foi finalizado, itera sobre a lista de itens não finalizados.
+    ---- Verifica se o nome do item é igual e o slot é diferente.
+    ---- Calcula a quantidade que falta para completar o stack.
+    ---- Transfere a quantidade necessária de itens entre os baús.
+    ---- Adiciona o item à lista de itens finalizados e remove da lista de itens não finalizados.
+    ---- Imprime mensagens de log detalhando a transferência.
     local function transferirItens()
         ::reiniciar::
         -- Verifica se não há itens incompletos
